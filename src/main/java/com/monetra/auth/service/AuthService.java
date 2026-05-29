@@ -6,7 +6,7 @@ import com.monetra.auth.dto.RegisterRequest;
 import com.monetra.client.entity.Address;
 import com.monetra.client.entity.Client;
 import com.monetra.client.entity.ContactDetail;
-import com.monetra.client.repository.AccountRepository;
+import com.monetra.account.repository.AccountRepository;
 import com.monetra.client.repository.AddressRepository;
 import com.monetra.client.repository.ClientRepository;
 import com.monetra.client.repository.ContactDetailRepository;
@@ -19,9 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 import java.util.Random;
-import java.util.UUID;
 
 @Service
 public class AuthService {

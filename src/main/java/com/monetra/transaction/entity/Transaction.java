@@ -1,12 +1,18 @@
 package com.monetra.transaction.entity;
 
 import com.monetra.account.entity.Account;
-import com.monetra.client.entity.Client;
 import com.monetra.transaction.enums.TransactionType;
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 
 @Entity
 @Table(name = "transactions")
