@@ -1,6 +1,7 @@
 package com.monetra.auth.service;
 
 import com.monetra.account.entity.Account;
+import com.monetra.auth.dto.CurrentUser;
 import com.monetra.auth.dto.RegisterRequest;
 import com.monetra.client.entity.Address;
 import com.monetra.client.entity.Client;
@@ -9,9 +10,11 @@ import com.monetra.client.repository.AccountRepository;
 import com.monetra.client.repository.AddressRepository;
 import com.monetra.client.repository.ClientRepository;
 import com.monetra.client.repository.ContactDetailRepository;
+import com.monetra.security.details.CustomUserDetails;
 import com.monetra.user.entity.User;
 import com.monetra.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -145,5 +148,28 @@ public class AuthService {
         }
 
         return user;
+    }
+
+    public CurrentUser getCurrentUser() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        CustomUserDetails userDetails =
+                (CustomUserDetails) authentication.getPrincipal();
+
+        var user = userDetails.getUser();
+
+        Client client = clientRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Client not found"));
+
+        return CurrentUser.builder()
+                .id(user.getId())
+                .firstName(client.getFirstName())
+                .lastName(client.getLastName())
+                .email(user.getEmail())
+                .build();
     }
 }

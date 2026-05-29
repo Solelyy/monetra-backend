@@ -1,6 +1,7 @@
 package com.monetra.auth.controller;
 
 import com.monetra.auth.dto.AuthResponse;
+import com.monetra.auth.dto.CurrentUser;
 import com.monetra.auth.dto.LoginRequest;
 import com.monetra.auth.dto.RegisterRequest;
 import com.monetra.auth.service.AuthService;
@@ -85,5 +86,10 @@ public class AuthController {
         authResponse.setMessage("Logged out successfully");
 
         return ResponseEntity.ok(authResponse);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<CurrentUser> getCurrentUser() {
+        return ResponseEntity.ok(authService.getCurrentUser());
     }
 }
