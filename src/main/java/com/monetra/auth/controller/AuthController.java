@@ -1,43 +1,34 @@
 package com.monetra.auth.controller;
 
+import com.monetra.auth.dto.AuthResponse;
+import com.monetra.auth.dto.LoginRequest;
+import com.monetra.auth.dto.RegisterRequest;
 import com.monetra.auth.service.AuthService;
-import com.monetra.user.dto.AuthResponse;
-import com.monetra.user.dto.LoginRequest;
-import com.monetra.user.dto.RegisterRequest;
+import com.monetra.security.jwt.JwtService;
 import com.monetra.user.entity.User;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
     private final AuthService authService;
-    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     public AuthController(AuthService authService,
-                          AuthenticationManager authenticationManager) {
-
+                          JwtService jwtService) {
         this.authService = authService;
-        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
     }
 
-    //register
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register (@RequestBody RegisterRequest request) {
-        User user = authService.registerUser(
-                request.getEmail(),
-                request.getPassword(),
-                request.getFirstName(),
-                request.getLastName()
-        );
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+
+        User user = authService.registerUser(request);
+
         AuthResponse response = new AuthResponse();
         response.setId(user.getId());
         response.setEmail(user.getEmail());
@@ -47,20 +38,52 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        Authentication authentication =
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                request.getEmail(),
-                                request.getPassword()
-                        )
-                );
+    public ResponseEntity<AuthResponse> login(
+            @RequestBody LoginRequest request,
+            HttpServletResponse response
+    ) {
 
-        AuthResponse response = new AuthResponse();
+        // 1. Validate credentials
+        User user = authService.authenticateUser(
+                request.getEmail(),
+                request.getPassword()
+        );
 
-        response.setEmail(request.getEmail());
-        response.setMessage("Login successful");
+        // 2. Generate JWT
+        String token = jwtService.generateToken(user.getEmail());
 
-        return ResponseEntity.ok(response);
+        // 3. Create HttpOnly cookie
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false); //make it true on deployment
+        cookie.setPath("/");
+        cookie.setMaxAge(24 * 60 * 60); // 1 day
+
+        response.addCookie(cookie);
+
+        // 4. Response (no sensitive data)
+        AuthResponse authResponse = new AuthResponse();
+        authResponse.setId(user.getId());
+        authResponse.setEmail(user.getEmail());
+        authResponse.setMessage("Login successful");
+
+        return ResponseEntity.ok(authResponse);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<AuthResponse> logout(HttpServletResponse response) {
+
+        Cookie cookie = new Cookie("token", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // delete cookie
+
+        response.addCookie(cookie);
+
+        AuthResponse authResponse = new AuthResponse();
+        authResponse.setMessage("Logged out successfully");
+
+        return ResponseEntity.ok(authResponse);
     }
 }

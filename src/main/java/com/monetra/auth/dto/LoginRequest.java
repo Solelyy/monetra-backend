@@ -1,4 +1,4 @@
-package com.monetra.user.dto;
+package com.monetra.auth.dto;
 
 import lombok.*;
 

@@ -1,31 +1,35 @@
 package com.monetra.security.config;
 
+import com.monetra.security.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
 
 @Configuration
 public class SecurityConfig {
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // disable csrf temporarily
+                // 1. Disable CSRF (not needed for JWT cookies)
                 .csrf(csrf -> csrf.disable())
 
-                // cors configuration
+                // 2. CORS config for frontend
                 .cors(cors -> cors.configurationSource(request -> {
 
                     CorsConfiguration config = new CorsConfiguration();
@@ -44,37 +48,44 @@ public class SecurityConfig {
 
                     config.setAllowedHeaders(List.of("*"));
 
-                    // REQUIRED for session cookies
+                    // allow cookies (JWT HttpOnly cookie)
                     config.setAllowCredentials(true);
 
                     return config;
                 }))
 
-                // route authorization
+                // 3. Session disabled
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                // 4. Route protection rules
                 .authorizeHttpRequests(auth -> auth
+                        // public endpoints (auth)
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // everything else requires authentication
                         .anyRequest().authenticated()
                 )
 
-                // session auth
-                .formLogin(Customizer.withDefaults())
+                // 5. Disable default Spring login form
+                .formLogin(form -> form.disable())
 
-                // logout
-                .logout(Customizer.withDefaults());
+                // 6. Disable HTTP Basic auth
+                .httpBasic(httpBasic -> httpBasic.disable())
+
+                // 7. Add JWT filter before Spring authentication filter
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }
 
+    // for hashing passwords
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config
-    ) throws Exception {
-
-        return config.getAuthenticationManager();
     }
 }
