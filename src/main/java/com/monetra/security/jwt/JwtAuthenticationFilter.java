@@ -36,6 +36,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = null;
         String email = null;
 
+        System.out.println("JWT FILTER EXECUTED");
+
         // 1. Get JWT from cookies
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -52,6 +54,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // 3. Extract email from JWT
                 email = jwtService.extractEmail(token);
+
+                System.out.println("Loading user from JWT: " + email);
 
                 // 4. Check if user is not already authenticated
                 if (email != null &&
