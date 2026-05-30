@@ -1,8 +1,8 @@
 package com.monetra.security.service;
 
 import com.monetra.security.details.CustomUserDetails;
-import com.monetra.user.entity.User;
-import com.monetra.user.repository.UserRepository;
+import com.monetra.models.User;
+import com.monetra.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

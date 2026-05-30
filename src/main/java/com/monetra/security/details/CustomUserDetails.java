@@ -1,6 +1,6 @@
 package com.monetra.security.details;
 
-import com.monetra.user.entity.User;
+import com.monetra.models.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
