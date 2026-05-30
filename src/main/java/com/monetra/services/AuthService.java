@@ -1,5 +1,9 @@
 package com.monetra.services;
 
+import com.monetra.exceptions.ClientNotFoundException;
+import com.monetra.exceptions.EmailAlreadyExistsException;
+import com.monetra.exceptions.MobileNumberAlreadyExistsException;
+import com.monetra.exceptions.UnauthorizedException;
 import com.monetra.models.Account;
 import com.monetra.dto.CurrentUser;
 import com.monetra.dto.RegisterRequest;
@@ -13,18 +17,21 @@ import com.monetra.repositories.ContactDetailRepository;
 import com.monetra.security.details.CustomUserDetails;
 import com.monetra.models.User;
 import com.monetra.repositories.UserRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.Random;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
+
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -33,36 +40,23 @@ public class AuthService {
     private final ContactDetailRepository contactDetailRepository;
     private final AccountRepository accountRepository;
 
-    public AuthService(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
-            ClientRepository clientRepository,
-            AddressRepository addressRepository,
-            AccountRepository accountRepository,
-            ContactDetailRepository contactDetailRepository
-            ) {
-        this.userRepository = userRepository;
-        this.clientRepository = clientRepository;
-        this.addressRepository = addressRepository;
-        this.contactDetailRepository = contactDetailRepository;
-        this.accountRepository = accountRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
     //Register
     @Transactional
     public User registerUser(RegisterRequest registerRequest) {
+        log.info("Registering a user: {}", registerRequest.getEmail());
 
         //1. check if email exists
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()){
-            throw new RuntimeException("Email already exists");
+            log.warn("Can't create account, email already exists: {}", registerRequest.getEmail());
+            throw new EmailAlreadyExistsException("Email already exists");
         }
 
         //2. check mobile number exists
         if (contactDetailRepository.findByMobileNumber(registerRequest
                 .getMobileNumber())
                 .isPresent()) {
-            throw new RuntimeException("Mobile number already exists");
+            log.warn("Can't create account, mobile number already exists: {}", registerRequest.getMobileNumber());
+            throw new MobileNumberAlreadyExistsException("Mobile number already exists");
         }
 
         //3. create user
@@ -112,6 +106,7 @@ public class AuthService {
                 .balance(BigDecimal.ZERO)
                 .build();
         accountRepository.save(account);
+        log.info("User registered successfully: {}", user.getEmail());
         return user;
     }
 
@@ -140,6 +135,7 @@ public class AuthService {
     }
 
     public User authenticateUser(String email, String password) {
+        log.debug("Authenticating user: {}", email);
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
@@ -157,13 +153,14 @@ public class AuthService {
         Object principal = authentication.getPrincipal();
 
         if (!(principal instanceof CustomUserDetails userDetails)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+            log.warn("Unauthorized access attempt");
+            throw new UnauthorizedException("Unauthorized");
         }
 
         var user = userDetails.getUser();
 
         Client client = clientRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Client not found"));
+                .orElseThrow(() -> new ClientNotFoundException("Client not found"));
 
         return CurrentUser.builder()
                 .id(user.getId())
