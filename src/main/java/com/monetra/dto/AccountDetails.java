@@ -1,5 +1,6 @@
 package com.monetra.dto;
 
+import com.monetra.dto.response.RecentTransactionResponse;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -15,5 +16,5 @@ public class AccountDetails {
     private String accountNumber;
     private BigDecimal accountBalance;
     private String accountName;
-    private List<TransactionResponse> recentTransactions;
+    private List<RecentTransactionResponse> recentTransactions;
 }

@@ -138,10 +138,10 @@ public class AuthService {
         log.debug("Authenticating user: {}", email);
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
+                .orElseThrow(() -> new BadCredentialsException("Incorrect email or password"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new BadCredentialsException("Invalid email or password");
+            throw new BadCredentialsException("Incorrect email or password");
         }
 
         return user;

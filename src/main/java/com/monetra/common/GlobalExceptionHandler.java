@@ -1,17 +1,17 @@
 package com.monetra.common;
 
-import com.monetra.exceptions.ClientNotFoundException;
-import com.monetra.exceptions.EmailAlreadyExistsException;
-import com.monetra.exceptions.MobileNumberAlreadyExistsException;
-import com.monetra.exceptions.UnauthorizedException;
+import com.monetra.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import org.springframework.security.authentication.BadCredentialsException;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -72,5 +72,31 @@ public class GlobalExceptionHandler {
                         HttpStatus.INTERNAL_SERVER_ERROR,
                         "An unexpected error occurred"
                 ));
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<ApiError> handleAccountNotFound(AccountNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(buildError(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidAmountException.class)
+    public ResponseEntity<ApiError> handleInvalidAmount(InvalidAmountException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(buildError(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
+
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage())
+        );
+
+        return ResponseEntity.badRequest().body(errors);
     }
 }

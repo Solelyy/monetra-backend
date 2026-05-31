@@ -1,4 +1,4 @@
-package com.monetra.dto;
+package com.monetra.dto.response;
 
 import com.monetra.enums.TransactionType;
 import lombok.*;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 
-public class TransactionResponse {
+public class RecentTransactionResponse {
     private Long id;
     private TransactionType type;
     private BigDecimal amount;
