@@ -1,4 +1,4 @@
-package com.monetra.dto;
+package com.monetra.dto.response;
 
 import lombok.*;
 
@@ -7,7 +7,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
-public class LoginRequest {
+public class AuthResponse {
+    private Long id;
     private String email;
-    private String password;
+    private String message;
 }

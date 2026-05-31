@@ -1,8 +1,8 @@
 package com.monetra.controllers;
 
-import com.monetra.dto.AuthResponse;
+import com.monetra.dto.response.AuthResponse;
 import com.monetra.dto.CurrentUser;
-import com.monetra.dto.LoginRequest;
+import com.monetra.dto.request.LoginRequest;
 import com.monetra.dto.RegisterRequest;
 import com.monetra.services.AuthService;
 import com.monetra.security.jwt.JwtService;
@@ -11,6 +11,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -85,6 +86,8 @@ public class AuthController {
 
         AuthResponse authResponse = new AuthResponse();
         authResponse.setMessage("Logged out successfully");
+
+        SecurityContextHolder.clearContext();
 
         return ResponseEntity.ok(authResponse);
     }

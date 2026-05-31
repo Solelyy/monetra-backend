@@ -6,6 +6,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -15,16 +17,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
+
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
-
-    public JwtAuthenticationFilter(JwtService jwtService,
-                                   CustomUserDetailsService userDetailsService) {
-        this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
-    }
 
     @Override
     protected void doFilterInternal(
@@ -36,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = null;
         String email = null;
 
-        System.out.println("JWT FILTER EXECUTED");
+        log.info("JTW Filter Executed: {} {}", request.getMethod(), request.getRequestURI());
 
         // 1. Get JWT from cookies
         if (request.getCookies() != null) {
@@ -54,8 +53,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // 3. Extract email from JWT
                 email = jwtService.extractEmail(token);
-
-                System.out.println("Loading user from JWT: " + email);
 
                 // 4. Check if user is not already authenticated
                 if (email != null &&
@@ -80,10 +77,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     // 8. Set user as authenticated in Spring Security context
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                    log.info("Current user: {}", SecurityContextHolder.getContext()
+                                    .getAuthentication()
+                                    .getName());
                 }
 
             } catch (Exception e) {
                 // If anything fails, clear security context
+                log.info("Caught the problem: {}", e.getMessage());
                 SecurityContextHolder.clearContext();
             }
         }
