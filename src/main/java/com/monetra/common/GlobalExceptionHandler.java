@@ -99,4 +99,11 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(errors);
     }
+
+    @ExceptionHandler(InvalidRecipientException.class)
+    public ResponseEntity<ApiError> handleInvalidRecipient(InvalidRecipientException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(buildError(HttpStatus.CONFLICT, ex.getMessage()));
+    }
 }

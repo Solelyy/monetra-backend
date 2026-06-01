@@ -1,6 +1,5 @@
-package com.monetra.dto;
+package com.monetra.dto.response;
 
-import com.monetra.dto.response.RecentTransactionResponse;
 import lombok.*;
 
 import java.math.BigDecimal;

@@ -1,4 +1,4 @@
-package com.monetra.dto;
+package com.monetra.dto.response;
 
 import lombok.*;
 

@@ -1,6 +1,4 @@
-package com.monetra.dto;
-
-import lombok.*;
+package com.monetra.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

@@ -1,6 +1,6 @@
 package com.monetra.services;
 
-import com.monetra.dto.AccountDetails;
+import com.monetra.dto.response.AccountDetails;
 import com.monetra.exceptions.AccountNotFoundException;
 import com.monetra.models.Account;
 import com.monetra.repositories.AccountRepository;

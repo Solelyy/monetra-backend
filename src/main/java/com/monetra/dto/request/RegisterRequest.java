@@ -1,4 +1,4 @@
-package com.monetra.dto;
+package com.monetra.dto.request;
 
 import com.monetra.enums.Gender;
 import com.monetra.enums.Suffix;
