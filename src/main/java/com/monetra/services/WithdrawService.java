@@ -21,13 +21,13 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 @Slf4j
 
-public class DepositService {
+public class WithdrawService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
 
     @Transactional
-    public TransactionReceipt deposit(TransactionRequest transactionRequest, UserDetails userDetails) {
-        log.info("Deposit request: {}", transactionRequest.getAmount());
+    public TransactionReceipt withdraw(TransactionRequest transactionRequest, UserDetails userDetails) {
+        log.info("Withdraw request: {}", transactionRequest.getAmount());
 
 //      String email = SecurityContextHolder.getContext().getAuthentication().getName();
         String email = userDetails.getUsername();
@@ -44,7 +44,7 @@ public class DepositService {
 
         if (requestedAmount.compareTo(min) < 0 ||
                 requestedAmount.compareTo(max) > 0) {
-            throw new InvalidAmountException("Deposit must be ₱50 - ₱50,000");
+            throw new InvalidAmountException("Withdraw amount must be ₱50 - ₱50,000");
         }
 
         //1. check the account and add the amount requested
@@ -53,14 +53,18 @@ public class DepositService {
 
         log.info("Account found, account number: {}", account.getAccountNumber());
 
-        account.setBalance(account.getBalance().add(requestedAmount));
+        if (requestedAmount.compareTo(account.getBalance()) > 0) {
+            throw new InvalidAmountException("Cannot exceed to balance");
+        }
+
+        account.setBalance(account.getBalance().subtract(requestedAmount));
 
         //2. create transaction
         Transaction transaction = Transaction.builder()
                 .transactionNumber(TransactionLibrary.generateTransactionNumber())
                 .account(account)
                 .amount(requestedAmount)
-                .type(TransactionType.DEPOSIT)
+                .type(TransactionType.WITHDRAW)
                 .senderAccountNumber(account.getAccountNumber())
                 .receiverAccountNumber(account.getAccountNumber())
                 .build();

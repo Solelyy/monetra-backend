@@ -1,15 +1,12 @@
 package com.monetra.controllers;
 
 import com.monetra.dto.AccountDetails;
-import com.monetra.dto.TransactionReceipt;
-import com.monetra.dto.request.DepositRequest;
+import com.monetra.dto.request.TransactionRequest;
 import com.monetra.dto.response.TransactionReceiptResponse;
 import com.monetra.services.AccountService;
 import com.monetra.services.DepositService;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
+import com.monetra.services.WithdrawService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class AccountController {
     private final AccountService accountService;
     private final DepositService depositService;
+    private final WithdrawService withdrawService;
 
     @GetMapping("/me")
     public AccountDetails getDashboardDetails(@AuthenticationPrincipal UserDetails userDetails){
@@ -29,14 +27,22 @@ public class AccountController {
 
     @PostMapping("/deposit")
     public TransactionReceiptResponse deposit(
-            @RequestBody DepositRequest depositRequest,
+            @RequestBody TransactionRequest transactionRequest,
             @AuthenticationPrincipal UserDetails userDetails) {
-        System.out.println("CONTROLLER HIT");
-        System.out.println("USER DETAILS: " + userDetails);
 
         TransactionReceiptResponse transactionReceiptResponse = new TransactionReceiptResponse(
-                true, "Successful Deposit", depositService.deposit(depositRequest, userDetails)
+                true, "Successful Deposit!", depositService.deposit(transactionRequest, userDetails)
         );
         return transactionReceiptResponse;
+    }
+
+    @PostMapping("/withdraw")
+    public TransactionReceiptResponse withdraw(
+            @RequestBody TransactionRequest transactionRequest,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        TransactionReceiptResponse transactionReceiptResponse = new TransactionReceiptResponse(
+                true, "Successful withdrawal!", withdrawService.withdraw(transactionRequest, userDetails)
+        );
+        return  transactionReceiptResponse;
     }
 }
