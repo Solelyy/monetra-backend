@@ -43,6 +43,9 @@ public class Transaction {
     @Column(length = 50)
     private String note;
 
+    @Column(name = "transfer_group_id", length = 50)
+    private String transferGroupId;
+
     @Column(name = "created_at",
             nullable = false,
             updatable = false)

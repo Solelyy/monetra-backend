@@ -1,9 +1,9 @@
 package com.monetra.controllers;
 
 import com.monetra.dto.response.AuthResponse;
-import com.monetra.dto.CurrentUser;
+import com.monetra.dto.response.CurrentUser;
 import com.monetra.dto.request.LoginRequest;
-import com.monetra.dto.RegisterRequest;
+import com.monetra.dto.request.RegisterRequest;
 import com.monetra.services.AuthService;
 import com.monetra.security.jwt.JwtService;
 import com.monetra.models.User;
@@ -45,13 +45,11 @@ public class AuthController {
             @RequestBody LoginRequest request,
             HttpServletResponse response
     ) {
-
         // 1. Validate credentials
         User user = authService.authenticateUser(
                 request.getEmail(),
                 request.getPassword()
         );
-
         // 2. Generate JWT
         String token = jwtService.generateToken(user.getEmail());
 

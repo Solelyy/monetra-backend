@@ -5,8 +5,8 @@ import com.monetra.exceptions.EmailAlreadyExistsException;
 import com.monetra.exceptions.MobileNumberAlreadyExistsException;
 import com.monetra.exceptions.UnauthorizedException;
 import com.monetra.models.Account;
-import com.monetra.dto.CurrentUser;
-import com.monetra.dto.RegisterRequest;
+import com.monetra.dto.response.CurrentUser;
+import com.monetra.dto.request.RegisterRequest;
 import com.monetra.models.Address;
 import com.monetra.models.Client;
 import com.monetra.models.ContactDetail;
@@ -128,7 +128,7 @@ public class AuthService {
 
         StringBuilder accountNumber = new StringBuilder();
 
-        for(int i= 0; i <= 12; i++) {
+        for(int i= 1; i <= 12; i++) {
             accountNumber.append(random.nextInt(10));
         }
         return accountNumber.toString();

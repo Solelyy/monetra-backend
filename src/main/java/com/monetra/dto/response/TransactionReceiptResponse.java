@@ -1,9 +1,7 @@
 package com.monetra.dto.response;
 
-import com.monetra.dto.TransactionReceipt;
-
-public record TransactionReceiptResponse (
+public record TransactionReceiptResponse<T> (
         boolean success,
         String message,
-        TransactionReceipt receipt
+        T receipt
 ) {}

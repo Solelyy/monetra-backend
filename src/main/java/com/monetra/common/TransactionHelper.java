@@ -1,11 +1,13 @@
 package com.monetra.common;
 
-import com.monetra.dto.TransactionReceipt;
+import com.monetra.dto.response.TransactionReceipt;
+import com.monetra.dto.response.TransferReceipt;
 import com.monetra.models.Transaction;
 
 import java.security.SecureRandom;
+import java.util.UUID;
 
-public class TransactionLibrary {
+public class TransactionHelper {
     private static final SecureRandom random = new SecureRandom();
 
     public static String generateTransactionNumber() {
@@ -39,4 +41,24 @@ public class TransactionLibrary {
                 transaction.getNote()
         );
     }
+
+    public static TransferReceipt createTransferReceipt(Transaction transaction) {
+        String firstName = transaction.getAccount().getClient().getFirstName();
+        String lastName = transaction.getAccount().getClient().getLastName();
+        String fullName = firstName + " " + lastName;
+
+        return new TransferReceipt(
+                transaction.getAmount(),
+                transaction.getTransactionNumber(),
+                transaction.getCreatedAt(),
+                transaction.getReceiverAccountNumber(),
+                fullName,
+                transaction.getNote()
+        );
+    }
+
+    public static String generateTransferGroupId() {
+        return "TRF-" + UUID.randomUUID().toString().substring(0,8).toUpperCase();
+    }
+
 }

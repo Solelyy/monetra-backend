@@ -1,7 +1,7 @@
 package com.monetra.services;
 
-import com.monetra.common.TransactionLibrary;
-import com.monetra.dto.TransactionReceipt;
+import com.monetra.common.TransactionHelper;
+import com.monetra.dto.response.TransactionReceipt;
 import com.monetra.dto.request.TransactionRequest;
 import com.monetra.enums.TransactionType;
 import com.monetra.exceptions.AccountNotFoundException;
@@ -54,14 +54,14 @@ public class WithdrawService {
         log.info("Account found, account number: {}", account.getAccountNumber());
 
         if (requestedAmount.compareTo(account.getBalance()) > 0) {
-            throw new InvalidAmountException("Cannot exceed to balance");
+            throw new InvalidAmountException("Withdraw amount exceeds available balance");
         }
 
         account.setBalance(account.getBalance().subtract(requestedAmount));
 
         //2. create transaction
         Transaction transaction = Transaction.builder()
-                .transactionNumber(TransactionLibrary.generateTransactionNumber())
+                .transactionNumber(TransactionHelper.generateTransactionNumber())
                 .account(account)
                 .amount(requestedAmount)
                 .type(TransactionType.WITHDRAW)
@@ -71,7 +71,7 @@ public class WithdrawService {
         transactionRepository.save(transaction);
 
         //3. create TransactionReceipt
-        TransactionReceipt transactionReceipt = TransactionLibrary.createReceipt(transaction);
+        TransactionReceipt transactionReceipt = TransactionHelper.createReceipt(transaction);
 
         return transactionReceipt;
     }
