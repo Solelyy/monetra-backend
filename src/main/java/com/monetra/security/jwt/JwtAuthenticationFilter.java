@@ -1,6 +1,6 @@
 package com.monetra.security.jwt;
 
-import com.monetra.security.service.CustomUserDetailsService;
+import com.monetra.security.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;

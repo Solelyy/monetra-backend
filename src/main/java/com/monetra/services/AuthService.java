@@ -14,7 +14,7 @@ import com.monetra.repositories.AccountRepository;
 import com.monetra.repositories.AddressRepository;
 import com.monetra.repositories.ClientRepository;
 import com.monetra.repositories.ContactDetailRepository;
-import com.monetra.security.details.CustomUserDetails;
+import com.monetra.security.CustomUserDetails;
 import com.monetra.models.User;
 import com.monetra.repositories.UserRepository;
 import lombok.extern.slf4j.Slf4j;

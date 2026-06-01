@@ -1,6 +1,5 @@
-package com.monetra.security.service;
+package com.monetra.security;
 
-import com.monetra.security.details.CustomUserDetails;
 import com.monetra.models.User;
 import com.monetra.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
