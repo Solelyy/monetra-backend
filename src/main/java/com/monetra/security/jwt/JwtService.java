@@ -20,7 +20,6 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    // 1. GENERATE TOKEN
     public String generateToken(String email) {
         return Jwts.builder()
                 .setSubject(email)
@@ -30,18 +29,15 @@ public class JwtService {
                 .compact();
     }
 
-    // 2. EXTRACT EMAIL
     public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // 3. VALIDATE TOKEN
     public boolean isTokenValid(String token, String email) {
         final String extractedEmail = extractEmail(token);
         return (extractedEmail.equals(email) && !isTokenExpired(token));
     }
 
-    // 4. CLAIMS HELPERS
     public <T> T extractClaim(String token, Function<Claims, T> resolver) {
         final Claims claims = extractAllClaims(token);
         return resolver.apply(claims);

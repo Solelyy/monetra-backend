@@ -42,14 +42,14 @@ public class TransactionHelper {
         );
     }
 
-    public static TransferReceipt createTransferReceipt(Transaction transaction) {
+    public static TransferReceipt createTransferReceipt(Transaction transaction, String transactionNumber) {
         String firstName = transaction.getAccount().getClient().getFirstName();
         String lastName = transaction.getAccount().getClient().getLastName();
         String fullName = firstName + " " + lastName;
 
         return new TransferReceipt(
                 transaction.getAmount(),
-                transaction.getTransactionNumber(),
+                transactionNumber,
                 transaction.getCreatedAt(),
                 transaction.getReceiverAccountNumber(),
                 fullName,
