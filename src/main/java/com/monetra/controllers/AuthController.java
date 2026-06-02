@@ -9,6 +9,8 @@ import com.monetra.security.jwt.JwtService;
 import com.monetra.models.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,33 +44,30 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
-            @RequestBody LoginRequest request,
-            HttpServletResponse response
+            @RequestBody LoginRequest request
     ) {
-        // 1. Validate credentials
         User user = authService.authenticateUser(
                 request.getEmail(),
                 request.getPassword()
         );
-        // 2. Generate JWT
+
         String token = jwtService.generateToken(user.getEmail());
 
-        // 3. Create HttpOnly cookie
-        Cookie cookie = new Cookie("token", token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false); //make it true on deployment
-        cookie.setPath("/");
-        cookie.setMaxAge(24 * 60 * 60); // 1 day
+        ResponseCookie cookie = ResponseCookie.from("token", token)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(24 * 60 * 60)
+                .build();
 
-        response.addCookie(cookie);
-
-        // 4. Response (no sensitive data)
         AuthResponse authResponse = new AuthResponse();
         authResponse.setId(user.getId());
         authResponse.setEmail(user.getEmail());
         authResponse.setMessage("Login successful");
 
-        return ResponseEntity.ok(authResponse);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(authResponse);
     }
 
     @PostMapping("/logout")
