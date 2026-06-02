@@ -7,8 +7,8 @@ import com.monetra.dto.request.RegisterRequest;
 import com.monetra.services.AuthService;
 import com.monetra.security.jwt.JwtService;
 import com.monetra.models.User;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -18,16 +18,16 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
-
     private final AuthService authService;
     private final JwtService jwtService;
 
-    public AuthController(AuthService authService,
-                          JwtService jwtService) {
-        this.authService = authService;
-        this.jwtService = jwtService;
-    }
+    @Value("${cookie.secure}")
+    private boolean cookieSecure;
+
+    @Value("${cookie.sameSite}")
+    private String sameSite;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
@@ -55,7 +55,8 @@ public class AuthController {
 
         ResponseCookie cookie = ResponseCookie.from("token", token)
                 .httpOnly(true)
-                .secure(false)
+                .secure(cookieSecure)
+                .sameSite(sameSite)
                 .path("/")
                 .maxAge(24 * 60 * 60)
                 .build();
@@ -71,22 +72,24 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<AuthResponse> logout(HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> logout() {
 
-        Cookie cookie = new Cookie("token", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false); //make this true in deployed
-        cookie.setPath("/");
-        cookie.setMaxAge(0); // delete cookie
-
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from("token", "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite(sameSite)
+                .path("/")
+                .maxAge(0)
+                .build();
 
         AuthResponse authResponse = new AuthResponse();
         authResponse.setMessage("Logged out successfully");
 
         SecurityContextHolder.clearContext();
 
-        return ResponseEntity.ok(authResponse);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(authResponse);
     }
 
     @GetMapping("/me")
