@@ -96,7 +96,7 @@ public class TransferService {
         transactionRepository.save(recipientTransaction);
 
         //8. create transaction receipt
-        TransferReceipt transferReceipt = TransactionHelper.createTransferReceipt(recipientTransaction);
+        TransferReceipt transferReceipt = TransactionHelper.createTransferReceipt(recipientTransaction, senderTransaction.getTransactionNumber());
 
         return transferReceipt;
     }
